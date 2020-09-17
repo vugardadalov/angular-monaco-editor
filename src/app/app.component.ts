@@ -69,6 +69,7 @@ export class AppComponent {
         });
   }
 
+  // For custom language
   applyCustomSql(){
     monaco.languages.register({ id: 'custom-sql' });
     monaco.languages.setLanguageConfiguration('custom-sql', conf);
