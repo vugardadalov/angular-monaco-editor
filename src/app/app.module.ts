@@ -15,7 +15,7 @@ import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzConfigService } from 'ng-zorro-antd/core/config/public-api';
 
 import { NzConfig, NZ_CONFIG } from 'ng-zorro-antd/core/config';
-import { NzButtonModule, NzGridModule, NzCardModule } from 'ng-zorro-antd/';
+import { NzButtonModule, NzGridModule, NzCardModule, NzDividerModule } from 'ng-zorro-antd/';
 
 const ngZorroConfig: NzConfig = {
   message: { nzTop: 120 },
@@ -38,7 +38,8 @@ registerLocaleData(en);
     NzCodeEditorModule,
     NzGridModule,
     NzButtonModule,
-    NzCardModule
+    NzCardModule,
+    NzDividerModule
   ],
   providers: [{ provide: NZ_I18N, useValue: en_US },
     { provide: NZ_CONFIG, useValue: ngZorroConfig }],

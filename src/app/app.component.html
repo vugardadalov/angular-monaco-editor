@@ -1,7 +1,18 @@
-<nz-card nzTitle="Card title" [nzExtra]="extraTemplate">
-  <nz-code-editor class="editor" [ngModel]="code" [nzEditorOption]="defaultEditorOption"
+<nz-card [nzTitle]="titleTemplate" [nzExtra]="extraTemplate">
+  <nz-code-editor class="editor" [ngModel]="editorContent" [nzEditorOption]="defaultEditorOption"
     (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
 </nz-card>
+
+<ng-template #titleTemplate>
+  Json editor
+  <!-- <a (click)="getData()">Refresh Json</a> -->
+</ng-template>
+
 <ng-template #extraTemplate>
-  <a>More</a>
+  <a (click)="saveData()">Save</a>
+
+  <nz-divider nzType="vertical"></nz-divider>
+  <nz-divider nzType="vertical"></nz-divider>
+
+  <a (click)="getData()">Refresh Json</a>
 </ng-template>
