@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { editor } from 'monaco-editor';
 import { UtilService } from './util.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { conf, language } from './custom-sql-config';
 
-// tslint:disable-next-line no-any
 declare const monaco: any;
 
 @Component({
@@ -13,25 +13,26 @@ declare const monaco: any;
 })
 export class AppComponent {
   editor?: editor.ICodeEditor | editor.IEditor;
-  editorContent = '{"hello":"er"}';
+  editorContent = `SELECT column_name(s)
+  FROM table_name
+  WHERE column_name BETWEEN value1 AND value2;`;
 
   // https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.ieditorconstructionoptions.html
   defaultEditorOption = {
     acceptSuggestionOnEnter: "on",// | "smart" | "off",
     cursorBlinking: "blink",// | "smooth" | "phase" | "expand" | "solid",
     cursorStyle: "line",// | "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
-    language: "json"
+    language: "sql"//json
   }
 
-  constructor(private utilService: UtilService) {
-    // this.getData();
-  }
+  constructor(private utilService: UtilService) {}
 
   onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
-    console.log(e);
-    console.log(monaco);
-    
     this.editor = e;
+    console.log(monaco.languages);
+    console.log(e);
+
+    // this.applyCustomSql();
     // this.editor.setModel(monaco.editor.createModel("console.log('Hello ng-zorro-antd')", 'typescript'));
   }
 
@@ -44,9 +45,9 @@ export class AppComponent {
             this.editorContent = JSON.stringify(response);
 
             var self = this;
-            setTimeout(function() {
+            setTimeout(function () {
               self.editor.getAction('editor.action.formatDocument').run();
-            },0);
+            }, 0);
           }
         },
         (error: HttpErrorResponse) => {
@@ -66,5 +67,11 @@ export class AppComponent {
         (error: HttpErrorResponse) => {
           console.log(error);
         });
+  }
+
+  applyCustomSql(){
+    monaco.languages.register({ id: 'custom-sql' });
+    monaco.languages.setLanguageConfiguration('custom-sql', conf);
+    monaco.languages.setMonarchTokensProvider('custom-sql', language);
   }
 }
