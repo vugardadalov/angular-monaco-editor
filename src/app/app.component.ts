@@ -46,7 +46,7 @@ export class AppComponent {
 
             var self = this;
             setTimeout(function () {
-              self.editor.getAction('editor.action.formatDocument').run();
+              // self.editor.getAction('editor.action.formatDocument').run();
             }, 0);
           }
         },

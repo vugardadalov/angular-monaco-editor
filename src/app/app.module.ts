@@ -15,7 +15,11 @@ import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzConfigService } from 'ng-zorro-antd/core/config/public-api';
 
 import { NzConfig, NZ_CONFIG } from 'ng-zorro-antd/core/config';
-import { NzButtonModule, NzGridModule, NzCardModule, NzDividerModule } from 'ng-zorro-antd/';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import {  NzGridModule } from 'ng-zorro-antd/grid';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+
 
 const ngZorroConfig: NzConfig = {
   message: { nzTop: 120 },
