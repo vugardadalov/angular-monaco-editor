@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { editor } from 'monaco-editor';
+import { language } from 'monaco-editor/min/vs/basic-languages/sql/sql';
 import { UtilService } from './util.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { conf, language } from './custom-sql-config';
 
 declare const monaco: any;
 
@@ -22,98 +21,84 @@ export class AppComponent {
     acceptSuggestionOnEnter: "on",// | "smart" | "off",
     cursorBlinking: "blink",// | "smooth" | "phase" | "expand" | "solid",
     cursorStyle: "line",// | "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
-    language: "sql"//json, sql
+    language: "sql",//json, sql
   }
+
+  syntaxMap: any = {
+    builtinFunctions: "Function",
+    builtinVariables: "Variable",
+    keywords: "Keyword",
+    operators: "Operator",
+    table: "File",
+    column: "File"
+  };
 
   constructor(private utilService: UtilService) { }
 
   onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
     this.editor = e;
-    // console.log(monaco.languages);
-    // console.log(e);
-    // this.setSuggestion()
-    // this.applyCustomSql();
-    // this.editor.setModel(monaco.editor.createModel("console.log('Hello ng-zorro-antd')", 'typescript'));
+
+    this.setSuggestion();
   }
 
   setSuggestion() {
     monaco.languages.register({ id: 'sql' });
     monaco.languages.registerCompletionItemProvider('sql', {
-      triggerCharacters:["."],
-			autoIndent:true,
+      triggerCharacters: [" "],
+      autoIndent: true,
       provideCompletionItems: (model, position) => {
         var word = model.getWordUntilPosition(position);
         var range = {
           startLineNumber: position.lineNumber,
           endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,// - 1, // UNCOMMENT THIS AND IT BREAKS
+          startColumn: word.startColumn,
           endColumn: word.endColumn
-      };
-        var suggestions = [
-          {
-            label: 'call_center',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: 'call_center',
-            documentation:'Table',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            range: range
-          },
-          {
-            label: 'testing',
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: 'testing(${1:condition})',
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          },
-          {
-            label: 'ifelse',
-            kind: monaco.languages.CompletionItemKind.Snippet,
-            insertText: ['if (${1:condition}) {', '\t$0', '} else {', '\t', '}'].join('\n'),
-            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            documentation: 'If-Else Statement',
-          },
-        ];
-        return { suggestions: suggestions };
+        };
+
+        return { suggestions: this.getSyntaxItems(range)};
       },
+      resolveCompletionItem(item) {
+        item.insertText = item.label.toUpperCase();
+
+        if(item.kind === monaco.languages.CompletionItemKind.Function) {
+          item.insertText += '()';
+        }
+
+        item.documentation = 'Some placeholder documentation';
+
+        return item;
+      }
     });
   }
 
-  getData(): void {
-    this.utilService.pull()
-      .subscribe(
-        (response: any) => {
-          console.log(response);
-          if (response) {
-            this.editorContent = JSON.stringify(response);
+  getSyntaxItems(range: any) {
+    let result = [];
+    let resultPerType = [];
 
-            var self = this;
-            setTimeout(function () {
-              // self.editor.getAction('editor.action.formatDocument').run();
-            }, 0);
+    for(let type in this.syntaxMap) {
+      if(type === 'table' || type === 'column') {
+        for(let i = 1; i <= 20; i++) {
+          let label = `${type.toUpperCase()}${i}`;
+
+          resultPerType.push({
+            label,
+            kind: monaco.languages.CompletionItemKind[this.syntaxMap[type]],
+            range
+          });
+        }
+      } else {
+        resultPerType = language[type].map(item => {
+          return {
+            label: item.toString().toLowerCase(),
+            kind: monaco.languages.CompletionItemKind[this.syntaxMap[type]],
+            range
           }
-        },
-        (error: HttpErrorResponse) => {
-          console.log(error);
         });
-  }
+      }
 
-  saveData(): void {
-    this.utilService.push('url', {})
-      .subscribe(
-        (response: any) => {
-          console.log(response);
-          if (response) {
-            this.editorContent = response;
-          }
-        },
-        (error: HttpErrorResponse) => {
-          console.log(error);
-        });
-  }
+      result.push(...resultPerType);
+    }
 
-  // For custom language
-  applyCustomSql() {
-    monaco.languages.register({ id: 'custom-sql' });
-    monaco.languages.setLanguageConfiguration('custom-sql', conf);
-    monaco.languages.setMonarchTokensProvider('custom-sql', language);
+    return result;
   }
-}
+};
