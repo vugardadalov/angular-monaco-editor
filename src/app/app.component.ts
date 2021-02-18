@@ -44,7 +44,7 @@ export class AppComponent {
   setSuggestion() {
     monaco.languages.register({ id: 'sql' });
     monaco.languages.registerCompletionItemProvider('sql', {
-      triggerCharacters: ["@"],
+      triggerCharacters: [" "],
       autoIndent: true,
       provideCompletionItems: (model, position) => {
         var word = model.getWordUntilPosition(position);
