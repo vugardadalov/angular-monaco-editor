@@ -29,8 +29,8 @@ export class AppComponent {
     builtinVariables: "Variable",
     keywords: "Keyword",
     operators: "Operator",
-    table: "File",
-    column: "File"
+    table: "Table",
+    column: "Column"
   };
 
   constructor(private utilService: UtilService) { }
@@ -44,7 +44,7 @@ export class AppComponent {
   setSuggestion() {
     monaco.languages.register({ id: 'sql' });
     monaco.languages.registerCompletionItemProvider('sql', {
-      triggerCharacters: [" "],
+      triggerCharacters: ["@"],
       autoIndent: true,
       provideCompletionItems: (model, position) => {
         var word = model.getWordUntilPosition(position);
@@ -63,7 +63,7 @@ export class AppComponent {
         if(item.kind === monaco.languages.CompletionItemKind.Function) {
           item.insertText += '()';
         }
-
+  
         item.documentation = 'Some placeholder documentation';
 
         return item;
@@ -78,11 +78,12 @@ export class AppComponent {
     for(let type in this.syntaxMap) {
       if(type === 'table' || type === 'column') {
         for(let i = 1; i <= 20; i++) {
-          let label = `${type.toUpperCase()}${i}`;
+          let label = `${type}${i}`;
 
           resultPerType.push({
             label,
-            kind: monaco.languages.CompletionItemKind[this.syntaxMap[type]],
+            kind: monaco.languages.CompletionItemKind.File,
+            detail: type,
             range
           });
         }
