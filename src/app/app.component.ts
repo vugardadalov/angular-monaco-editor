@@ -1,6 +1,7 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { editor } from 'monaco-editor';
-import { language } from 'monaco-editor/min/vs/basic-languages/sql/sql';
+import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
 import { UtilService } from './util.service';
 
 declare const monaco: any;
@@ -101,5 +102,45 @@ export class AppComponent {
     }
 
     return result;
+  }
+
+  getData(): void {
+    this.utilService.pull()
+      .subscribe(
+        (response: any) => {
+          console.log(response);
+          if (response) {
+            this.editorContent = JSON.stringify(response);
+
+            var self = this;
+            setTimeout(function () {
+              // self.editor.getAction('editor.action.formatDocument').run();
+            }, 0);
+          }
+        },
+        (error: HttpErrorResponse) => {
+          console.log(error);
+        });
+  }
+
+  saveData(): void {
+    this.utilService.push('url', {})
+      .subscribe(
+        (response: any) => {
+          console.log(response);
+          if (response) {
+            this.editorContent = response;
+          }
+        },
+        (error: HttpErrorResponse) => {
+          console.log(error);
+        });
+  }
+
+  // For custom language
+  applyCustomSql() {
+    monaco.languages.register({ id: 'custom-sql' });
+    monaco.languages.setLanguageConfiguration('custom-sql', conf);
+    monaco.languages.setMonarchTokensProvider('custom-sql', language);
   }
 };
