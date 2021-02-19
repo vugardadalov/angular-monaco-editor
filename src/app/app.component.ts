@@ -27,13 +27,13 @@ export class AppComponent {
 
   syntaxMap: any = {
     builtinFunctions: "Function",
-    builtinVariables: "Variable",
+    // builtinVariables: "Variable",
     keywords: "Keyword",
     operators: "Operator",
     table: "Table",
     column: "Column"
   };
-
+  
   constructor(private utilService: UtilService) { }
 
   onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
@@ -55,11 +55,15 @@ export class AppComponent {
           startColumn: word.startColumn,
           endColumn: word.endColumn
         };
-
+        
         return { suggestions: this.getSyntaxItems(range)};
       },
       resolveCompletionItem(item) {
-        item.insertText = item.label.toUpperCase();
+        if(item.kind !== monaco.languages.CompletionItemKind.File) {
+          item.insertText = item.label.toUpperCase();
+        } else {
+          item.insertText = item.label;
+        }
 
         if(item.kind === monaco.languages.CompletionItemKind.Function) {
           item.insertText += '()';
