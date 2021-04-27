@@ -33,7 +33,7 @@ export class SqlCustomSuggestionComponent implements OnInit {
 
   syntaxMap: any = {
     builtinFunctions: "Function",
-    builtinVariables: "Variable",
+    // builtinVariables: "Variable",
     keywords: "Keyword",
     operators: "Operator",
     table: "Table",
@@ -65,7 +65,13 @@ export class SqlCustomSuggestionComponent implements OnInit {
         return { suggestions: this.getSyntaxItems(range)};
       },
       resolveCompletionItem(item) {
-        item.insertText = item.label.toUpperCase();
+        // item.insertText = item.label.toUpperCase();
+        if(item.kind !== monaco.languages.CompletionItemKind.File) {
+          item.insertText = item.label.toUpperCase();
+        } else {
+          item.insertText = item.label;
+        }
+
 
         if(item.kind === monaco.languages.CompletionItemKind.Function) {
           item.insertText += '()';
