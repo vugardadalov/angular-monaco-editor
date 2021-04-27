@@ -1,7 +1,9 @@
-<nz-card [nzTitle]="titleTemplate">
-    <nz-code-editor class="editor" [ngModel]="editorContent" [nzEditorOption]="defaultEditorOption"
-        (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
-</nz-card>
+<div style="max-width: 800px;max-height: 500; margin: auto;">
+    <nz-card [nzTitle]="titleTemplate">
+        <nz-code-editor class="editor" [ngModel]="editorContent" [nzEditorOption]="defaultEditorOption"
+            (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
+    </nz-card>
+</div>
 
 <ng-template #titleTemplate>
     Sql viewer

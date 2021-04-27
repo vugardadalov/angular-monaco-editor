@@ -1,3 +1,7 @@
 .editor {
     height: calc(100vh - 130px);
+
+    ::ng-deep .cursors-layer > .cursor {
+        display: none !important;
+    }
 }
