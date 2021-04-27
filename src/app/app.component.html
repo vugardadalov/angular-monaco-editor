@@ -1,18 +1,1 @@
-<nz-card [nzTitle]="titleTemplate">
-  <nz-code-editor class="editor" [ngModel]="editorContent" [nzEditorOption]="defaultEditorOption"
-    (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
-</nz-card>
-
-<ng-template #titleTemplate>
-  Sql editor
-  <a (click)="getData()">Refresh Json</a>
-</ng-template>
-
-<ng-template #extraTemplate>
-  <a (click)="saveData()">Save</a>
-
-  <nz-divider nzType="vertical"></nz-divider>
-  <nz-divider nzType="vertical"></nz-divider>
-
-  <a (click)="getData()">Refresh Json</a>
-</ng-template>
+<app-sql-viewer></app-sql-viewer>

@@ -19,6 +19,8 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import {  NzGridModule } from 'ng-zorro-antd/grid';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { SqlViewerComponent } from './sql-viewer/sql-viewer.component';
+import { SqlCustomSuggestionComponent } from './sql-custom-suggestion/sql-custom-suggestion.component';
 
 
 const ngZorroConfig: NzConfig = {
@@ -31,7 +33,9 @@ registerLocaleData(en);
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    SqlViewerComponent,
+    SqlCustomSuggestionComponent
   ],
   imports: [
     BrowserModule,
