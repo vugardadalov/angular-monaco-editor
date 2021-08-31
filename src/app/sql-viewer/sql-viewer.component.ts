@@ -19,10 +19,12 @@ export class SqlViewerComponent implements OnInit {
     minimap: {
       enabled: false,
     },
-    // cursorBlinking: "solid",// | "smooth" | "phase" | "expand" | "solid","blink"
-    // cursorStyle: "line-thin",// "line"| "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
-    // readOnly: true,
-    // folding:false
+
+    cursorBlinking: "solid",// | "smooth" | "phase" | "expand" | "solid","blink"
+    cursorStyle: "line-thin",// "line"| "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
+    readOnly: true,
+    folding:false,
+
     scrollbar: {
       verticalScrollbarSize: 6,
       horizontalScrollbarSize: 6,
