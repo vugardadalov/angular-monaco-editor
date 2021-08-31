@@ -1,22 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { editor } from 'monaco-editor';
 import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
 import { UtilService } from '../util.service';
-
 declare const monaco: any;
-
 
 @Component({
   selector: 'app-sql-custom-suggestion',
   templateUrl: './sql-custom-suggestion.component.html',
   styleUrls: ['./sql-custom-suggestion.component.scss']
 })
-export class SqlCustomSuggestionComponent implements OnInit {
-
-
-  ngOnInit(): void {
-  }
+export class SqlCustomSuggestionComponent {
 
   editor?: editor.ICodeEditor | editor.IEditor;
   editorContent = `SELECT column_name(s)
@@ -62,21 +55,21 @@ export class SqlCustomSuggestionComponent implements OnInit {
           endColumn: word.endColumn
         };
 
-        return { suggestions: this.getSyntaxItems(range)};
+        return { suggestions: this.getSyntaxItems(range) };
       },
       resolveCompletionItem(item) {
         // item.insertText = item.label.toUpperCase();
-        if(item.kind !== monaco.languages.CompletionItemKind.File) {
+        if (item.kind !== monaco.languages.CompletionItemKind.File) {
           item.insertText = item.label.toUpperCase();
         } else {
           item.insertText = item.label;
         }
 
 
-        if(item.kind === monaco.languages.CompletionItemKind.Function) {
+        if (item.kind === monaco.languages.CompletionItemKind.Function) {
           item.insertText += '()';
         }
-  
+
         item.documentation = 'Some placeholder documentation';
 
         return item;
@@ -88,9 +81,9 @@ export class SqlCustomSuggestionComponent implements OnInit {
     let result = [];
     let resultPerType = [];
 
-    for(let type in this.syntaxMap) {
-      if(type === 'table' || type === 'column') {
-        for(let i = 1; i <= 20; i++) {
+    for (let type in this.syntaxMap) {
+      if (type === 'table' || type === 'column') {
+        for (let i = 1; i <= 20; i++) {
           let label = `${type}${i}`;
 
           resultPerType.push({
@@ -114,39 +107,6 @@ export class SqlCustomSuggestionComponent implements OnInit {
     }
 
     return result;
-  }
-
-  getData(): void {
-    this.utilService.pull()
-      .subscribe(
-        (response: any) => {
-          console.log(response);
-          if (response) {
-            this.editorContent = JSON.stringify(response);
-
-            var self = this;
-            setTimeout(function () {
-              // self.editor.getAction('editor.action.formatDocument').run();
-            }, 0);
-          }
-        },
-        (error: HttpErrorResponse) => {
-          console.log(error);
-        });
-  }
-
-  saveData(): void {
-    this.utilService.push('url', {})
-      .subscribe(
-        (response: any) => {
-          console.log(response);
-          if (response) {
-            this.editorContent = response;
-          }
-        },
-        (error: HttpErrorResponse) => {
-          console.log(error);
-        });
   }
 
   // For custom language
