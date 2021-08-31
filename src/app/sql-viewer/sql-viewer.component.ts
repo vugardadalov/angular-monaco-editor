@@ -15,19 +15,19 @@ export class SqlViewerComponent implements OnInit {
   // https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.ieditorconstructionoptions.html
   defaultEditorOption = {
     // acceptSuggestionOnEnter: "on",// | "smart" | "off",
-    cursorBlinking: "solid",// | "smooth" | "phase" | "expand" | "solid","blink"
-    cursorStyle: "line-thin",// "line"| "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
     language: "sql",//json, sql
     minimap: {
       enabled: false,
     },
-    readOnly: true,
+    // cursorBlinking: "solid",// | "smooth" | "phase" | "expand" | "solid","blink"
+    // cursorStyle: "line-thin",// "line"| "block" | "underline" | "line-thin" | "block-outline" | "underline-thin"
+    // readOnly: true,
+    // folding:false
     scrollbar: {
       verticalScrollbarSize: 6,
       horizontalScrollbarSize: 6,
     },
     lineNumbers: false,
-    folding:false
     // fontSize: 10
   }
 
