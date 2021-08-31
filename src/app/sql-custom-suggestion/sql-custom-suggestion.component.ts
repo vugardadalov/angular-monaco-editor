@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { editor } from 'monaco-editor';
 import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
-import { UtilService } from '../util.service';
 declare const monaco: any;
 
 @Component({
@@ -33,7 +32,7 @@ export class SqlCustomSuggestionComponent {
     column: "Column"
   };
 
-  constructor(private utilService: UtilService) { }
+  constructor() { }
 
   onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
     this.editor = e;
