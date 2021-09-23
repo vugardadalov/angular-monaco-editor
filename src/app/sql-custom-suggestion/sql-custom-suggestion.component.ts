@@ -32,11 +32,8 @@ export class SqlCustomSuggestionComponent {
     column: "Column"
   };
 
-  constructor() { }
-
   onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
     this.editor = e;
-
     this.setSuggestion();
   }
 
@@ -46,17 +43,23 @@ export class SqlCustomSuggestionComponent {
       triggerCharacters: [" "],
       autoIndent: true,
       provideCompletionItems: (model, position) => {
+        // console.log(model, position);
+        
         var word = model.getWordUntilPosition(position);
+
         var range = {
           startLineNumber: position.lineNumber,
           endLineNumber: position.lineNumber,
           startColumn: word.startColumn,
           endColumn: word.endColumn
         };
+        // console.log(word, range);
 
         return { suggestions: this.getSyntaxItems(range) };
       },
       resolveCompletionItem(item) {
+        console.log(item, monaco.languages.CompletionItemKind);
+        
         // item.insertText = item.label.toUpperCase();
         if (item.kind !== monaco.languages.CompletionItemKind.File) {
           item.insertText = item.label.toUpperCase();
@@ -93,7 +96,11 @@ export class SqlCustomSuggestionComponent {
           });
         }
       } else {
+        console.log(language);
+        
         resultPerType = language[type].map(item => {
+          // console.log(item);
+          
           return {
             label: item.toString().toLowerCase(),
             kind: monaco.languages.CompletionItemKind[this.syntaxMap[type]],
