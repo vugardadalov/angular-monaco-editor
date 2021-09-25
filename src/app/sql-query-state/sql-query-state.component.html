@@ -1,0 +1,21 @@
+<div style="max-width: 800px;max-height: 500; margin: auto;">
+    <nz-card [nzTitle]="titleTemplate">
+        <nz-code-editor class="editor" [ngModel]="editorContent" [nzEditorOption]="defaultEditorOption"
+            (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
+    </nz-card>
+
+    <br>
+
+    <div class="btns">
+        <button (click)="pos()">Position</button>
+        <button (click)="mod()">Model</button>
+        <button (click)="sel()">Selection</button>
+        <!-- <button (click)="pos()">Position</button>
+        <button (click)="pos()">Position</button> -->
+        <button (click)="info()">e</button>
+    </div>
+</div>
+
+<ng-template #titleTemplate>
+    Sql viewer
+</ng-template>
