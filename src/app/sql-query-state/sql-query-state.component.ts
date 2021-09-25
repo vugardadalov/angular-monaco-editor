@@ -1,7 +1,8 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { editor } from 'monaco-editor';
+import { editor, KeyCode, KeyMod } from 'monaco-editor';
 import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
+import { Key } from 'protractor';
 declare const monaco: any;
 
 @Component({
@@ -10,14 +11,13 @@ declare const monaco: any;
   styleUrls: ['./sql-query-state.component.scss']
 })
 export class SqlQueryStateComponent implements OnInit {
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      console.log(this.editor.getPosition(), this.editor.getSelection());
-      
-    }
-  }
-  
+  // @HostListener('document:keydown', ['$event'])
+  // onKeyDown(event: KeyboardEvent): void {
+  //   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+  //     console.log(this.editor.getPosition(), this.editor.getSelection());
+  //   }
+  // }
+
   editor?: editor.ICodeEditor | editor.IEditor;
   editorContent = SqlQuery;
 
@@ -47,22 +47,92 @@ export class SqlQueryStateComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  onEditorInit(e: editor.ICodeEditor | editor.IEditor): void {
+  onEditorInit(e: editor.ICodeEditor): void {
     this.editor = e;
     console.log(e);
+    // e.updateOptions({ contextmenu: false });
 
-    (e as any).addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, (e: any) => {
-      // keydown trigger (CtrlCmd + Enter) on document
-      const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
-      document.dispatchEvent(event);
+    // this.actionWithCondition(e);
+    // this.customAction(e);
+
+    e.onContextMenu(function (e) {
+      // myCondition.set(true);//hide on context menu
+      // myCondition.set(false);//show on context menu
     });
 
-    (e as any).onDidChangeCursorSelection((e) => {
-      console.log(e);
+    // (e as any).addCommand(KeyMod.CtrlCmd | KeyCode.Enter, (e: any) => {
+    //   // keydown trigger (CtrlCmd + Enter) on document
+    //   const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
+    //   document.dispatchEvent(event);
+    // });
+
+    e.onDidChangeCursorSelection((e) => {
+      // console.log(e);
       const a = (this.editor.getModel() as any).getValueInRange(e.selection);
-      console.log(a);
     });
     // e.updateOptions({});
+  }
+
+  customAction(e:any) {
+    const myAction: editor.IActionDescriptor = {
+      id: "something-neat",
+      label: "Something Neat",
+      contextMenuOrder: 0, // choose the order
+      contextMenuGroupId: "1_modification", // create a new grouping
+      keybindings: [
+        // eslint-disable-next-line no-bitwise
+        KeyMod.CtrlCmd | KeyCode.Enter, // Ctrl + Enter or Cmd + Enter
+      ],
+      run: (editor) => {
+        console.log(editor);
+      },
+    };
+    (e as any).addAction(myAction);
+  }
+
+  actionWithCondition(e) {
+    const myCondition = (e as editor.IStandaloneCodeEditor).createContextKey('myCondition', true);
+
+    (e as editor.IStandaloneCodeEditor).addAction({
+      id: 'my-unique-id',
+      label: `WHERE column_name BETWEEN value_1 AND value_2;...`,
+      // keybindings: [
+      //   KeyMod.CtrlCmd | KeyCode.Enter,
+      //   // KeyMod.chord(KeyMod.CtrlCmd | KeyCode.KEY_K, KeyMod.CtrlCmd | KeyCode.KEY_M)
+      // ],
+      precondition: 'myCondition',
+      // keybindingContext: null,
+      contextMenuGroupId: '1_modification',
+      contextMenuOrder: 1,
+      run: function (ed) {
+        //alert("i'm running => " + ed.getPosition());
+        // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
+        // document.dispatchEvent(event);
+
+        // console.log("i'm running => " + ed.getPosition());
+
+        return null;
+      }
+    });
+
+    var myBinding = (e as editor.IStandaloneCodeEditor).addCommand(KeyCode.KEY_L, function () {
+      myCondition.set(false);
+    });
+
+    // Uncomment this for hiding "My Label" option only once.
+    e.onContextMenu(function (evt) {
+      var a = (e as any).getModel().getLineContent(evt.target.position.lineNumber);
+      var c = (e as any).getAction('my-unique-id');
+      console.log(a, c);
+      if (a.includes('table')) {
+        console.log(a);
+        c._precondition.expr[0].value = 1;
+      } else {
+        c._precondition.expr[0].value = 0;
+      }
+      c.isSupported(true);
+      c.run();
+    });
   }
 
   pos() {
