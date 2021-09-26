@@ -39,6 +39,7 @@ export class SqlQueryStateComponent implements OnInit {
       verticalScrollbarSize: 6,
       horizontalScrollbarSize: 6,
     },
+    // glyphMargin: true
     // lineNumbers: false,
     // fontSize: 10
   }
@@ -136,9 +137,29 @@ export class SqlQueryStateComponent implements OnInit {
         const queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
         const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
         console.log(queryRange, queryValue);
-        this.editor.setSelection(queryRange);
+        // this.editor.setSelection(queryRange);
+        this.hightLight(e, queryRange);
       }
     }
+  }
+
+  hightLight(e: any = this.editor as any, range: Range) {
+    const d: editor.IModelDeltaDecoration[] = [{
+      range: range,
+      options: {
+        isWholeLine: true,
+        linesDecorationsClassName: 'myLineDecoration',
+        hoverMessage: { value: 'RUN' }
+      }
+    },
+    {
+      range,
+      options: {
+        inlineClassName: 'myInlineDecoration'
+      }
+    }];
+
+    (e as editor.ICodeEditor).deltaDecorations([], d);
   }
 
   customAction(e: any) {
