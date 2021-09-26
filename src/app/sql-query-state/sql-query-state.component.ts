@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { editor, KeyCode, KeyMod, Range } from 'monaco-editor';
+import { editor, KeyCode, KeyMod, Range, Position } from 'monaco-editor';
 import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
 import { Key } from 'protractor';
 declare const monaco: any;
@@ -14,7 +14,8 @@ export class SqlQueryStateComponent implements OnInit {
   // @HostListener('document:keydown', ['$event'])
   // onKeyDown(event: KeyboardEvent): void {
   //   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-  //     console.log(this.editor.getPosition(), this.editor.getSelection());
+  //     // console.log(this.editor.getPosition(), this.editor.getSelection());
+  //     this.editor.focus();
   //   }
   // }
 
@@ -74,7 +75,7 @@ export class SqlQueryStateComponent implements OnInit {
     // });
   }
 
-  findStatement(e: editor.IStandaloneCodeEditor) {
+  findStatement1(e: editor.IStandaloneCodeEditor) {
     console.log(this.editor.getPosition());
     var regex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DESC';
 
@@ -83,6 +84,34 @@ export class SqlQueryStateComponent implements OnInit {
     console.log(prev.range, prevValue);
 
     const next = (e as editor.IStandaloneCodeEditor).getModel().findNextMatch(';', this.editor.getPosition(), false, false, null, false);
+    const nextValue = (this.editor.getModel() as any).getValueInRange(next.range);
+    console.log(next.range, nextValue);
+
+    const r = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
+    const rValue = (this.editor.getModel() as any).getValueInRange(r);
+    // console.log(r, rValue);
+    this.editor.setSelection(r);
+  }
+
+  findStatement(e: editor.IStandaloneCodeEditor) {
+    var regex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DESC';
+    const pos: Position = this.editor.getPosition();
+
+    const minCol = e.getModel().getLineMinColumn(pos.lineNumber);
+    const maxCol = e.getModel().getLineMaxColumn(pos.lineNumber);
+
+    console.log(pos, minCol, maxCol);
+
+    const minPos = new Position(pos.lineNumber, minCol);
+    const maxPos = new Position(pos.lineNumber, maxCol);
+
+    console.log(minPos, maxPos);
+
+    const prev = (e as editor.IStandaloneCodeEditor).getModel().findPreviousMatch(regex, maxPos, true, false, null, false);
+    const prevValue = (this.editor.getModel() as any).getValueInRange(prev.range);
+    console.log(prev.range, prevValue);
+
+    const next = (e as editor.IStandaloneCodeEditor).getModel().findNextMatch(';', minPos, false, false, null, false);
     const nextValue = (this.editor.getModel() as any).getValueInRange(next.range);
     console.log(next.range, nextValue);
 
