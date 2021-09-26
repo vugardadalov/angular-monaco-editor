@@ -65,7 +65,7 @@ export class SqlQueryStateComponent implements OnInit {
       // keydown trigger (CtrlCmd + Enter) on document
       // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
       // document.dispatchEvent(event);
-      this.findStatement(e as editor.IStandaloneCodeEditor);
+      this.findStatement3(e as editor.IStandaloneCodeEditor);
 
     });
 
@@ -73,12 +73,14 @@ export class SqlQueryStateComponent implements OnInit {
     //   const a = (this.editor.getModel() as any).getValueInRange(e.selection);
     //   console.log(e.selection, a);
     // });
+
+    // e.onDidChangeCursorPosition((e: editor.ICursorPositionChangedEvent) => {
+    //   this.findStatement();
+    // });
   }
 
   findStatement1(e: editor.IStandaloneCodeEditor) {
     console.log(this.editor.getPosition());
-    var regex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DESC';
-
     const prev = (e as editor.IStandaloneCodeEditor).getModel().findPreviousMatch(regex, this.editor.getPosition(), true, false, null, false);
     const prevValue = (this.editor.getModel() as any).getValueInRange(prev.range);
     console.log(prev.range, prevValue);
@@ -93,8 +95,7 @@ export class SqlQueryStateComponent implements OnInit {
     this.editor.setSelection(r);
   }
 
-  findStatement(e: editor.IStandaloneCodeEditor) {
-    var regex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DESC';
+  findStatement2(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     const pos: Position = this.editor.getPosition();
 
     const minCol = e.getModel().getLineMinColumn(pos.lineNumber);
@@ -121,6 +122,25 @@ export class SqlQueryStateComponent implements OnInit {
     this.editor.setSelection(r);
   }
 
+  findStatement3(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
+    const startPos = new Position(this.editor.getPosition().lineNumber, e.getModel().getLineMinColumn(this.editor.getPosition().lineNumber));
+    const first = e.getModel().findPreviousMatch(';', startPos, false, false, null, false);
+
+    if (first) {
+      const prev = e.getModel().findNextMatch(regex, new Position(first.range.endLineNumber, first.range.endColumn), true, false, null, false);
+      const next = e.getModel().findNextMatch(';', startPos, false, false, null, false);
+
+      if (prev && next) {
+        // const prevValue = (this.editor.getModel() as any).getValueInRange(prev.range);
+        // const nextValue = (this.editor.getModel() as any).getValueInRange(next.range);
+        const queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
+        const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
+        console.log(queryRange, queryValue);
+        this.editor.setSelection(queryRange);
+      }
+    }
+  }
+
   customAction(e: any) {
     const myAction: editor.IActionDescriptor = {
       id: "something-neat",
@@ -138,10 +158,10 @@ export class SqlQueryStateComponent implements OnInit {
     (e as any).addAction(myAction);
   }
 
-  actionWithCondition(e) {
-    const myCondition = (e as editor.IStandaloneCodeEditor).createContextKey('myCondition', true);
+  actionWithCondition(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
+    const myCondition = e.createContextKey('myCondition', true);
 
-    (e as editor.IStandaloneCodeEditor).addAction({
+    e.addAction({
       id: 'my-unique-id',
       label: `WHERE column_name BETWEEN value_1 AND value_2;...`,
       // keybindings: [
@@ -200,6 +220,8 @@ export class SqlQueryStateComponent implements OnInit {
   }
 }
 
+const regex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|DESC';
+
 const SqlQuery = `
 SELECT 
     call.*,
@@ -209,10 +231,37 @@ ORDER BY
     call.employee_id ASC,
     call.start_time ASC;
 
+Select * from Employee a where rowid <>( select max(rowid) 
+from Employee b where a.Employee_num=b.Employee_num);
 
-    SELECT column_name(s)
+Select * from Employee where Rowid= select min(Rowid) 
+from Employee;
+
+Select * from Employee e where rownum <=5
+union
+select * from (Select * from Employee e order by rowid desc) where rownum <=5;
+
+select distinct salary from employee a where 3 >= (select count(distinct salary) 
+from employee b where a.salary <= b.salary) 
+order by a.salary desc;
+
+
+SELECT column_name(s)
 FROM table_name
 WHERE column_name BETWEEN value_1 AND value_2;
+
+SELECT 
+	country.country_name_eng,
+	SUM(CASE WHEN call.id IS NOT NULL THEN 1 ELSE 0 END) AS calls,
+	AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) AS avg_difference
+FROM country 
+LEFT JOIN city ON city.country_id = country.id
+LEFT JOIN customer ON city.id = customer.city_id
+LEFT JOIN call ON call.customer_id = customer.id
+GROUP BY 
+	country.id,
+	country.country_name_eng
+ORDER BY calls DESC, country.id ASC;
 
 
 CREATE TABLE table_name (
@@ -224,6 +273,38 @@ CREATE TABLE table_name (
 
 DELETE FROM table_name
 WHERE some_column = some_value;
+
+SELECT 
+	country.country_name_eng,
+	SUM(CASE WHEN call.id IS NOT NULL THEN 1 ELSE 0 END) AS calls,
+	AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) AS avg_difference
+FROM country 
+LEFT JOIN city ON city.country_id = country.id
+LEFT JOIN customer ON city.id = customer.city_id
+LEFT JOIN call ON call.customer_id = customer.id
+GROUP BY 
+	country.id,
+	country.country_name_eng
+HAVING AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) > (SELECT AVG(DATEDIFF(SECOND, call.start_time, call.end_time)) FROM call)
+ORDER BY calls DESC, country.id ASC;
+
+-- the query returns a call summary for countries having average call duration > average call duration of all calls
+SELECT 
+    country.country_name_eng,
+    SUM(CASE WHEN call.id IS NOT NULL THEN 1 ELSE 0 END) AS calls,
+    AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) AS avg_difference
+FROM country 
+-- we've used left join to include also countries without any call
+LEFT JOIN city ON city.country_id = country.id
+LEFT JOIN customer ON city.id = customer.city_id
+LEFT JOIN call ON call.customer_id = customer.id
+GROUP BY 
+    country.id,
+    country.country_name_eng
+-- filter out only countries having an average call duration > average call duration of all calls
+HAVING AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) > (SELECT AVG(DATEDIFF(SECOND, call.start_time, call.end_time)) FROM call)
+ORDER BY calls DESC, country.id ASC;
+
 `
 
 interface IPosition {
