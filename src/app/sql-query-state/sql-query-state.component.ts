@@ -19,20 +19,17 @@ export class SqlQueryStateComponent {
   editor?: editor.ICodeEditor | editor.IEditor | editor.IStandaloneCodeEditor;
   editorContent = SqlQuery;
 
-  action: editor.IActionDescriptor;
-  actionContextKey: editor.IContextKey<boolean>;
+  widget: editor.IContentWidget;
 
   defaultEditorOption: editor.IStandaloneEditorConstructionOptions = {
     language: "sql",//json, sql
     minimap: {
       enabled: false,
-    },
-    // fixedOverflowWidgets: true
+    }
   }
 
   onEditorInit(e: editor.ICodeEditor): void {
     this.editor = e;
-    console.log(e);
 
     e.onContextMenu(function (e) {
       // myCondition.set(true);//hide on context menu
@@ -43,7 +40,7 @@ export class SqlQueryStateComponent {
       console.log(evt);
       // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
       // document.dispatchEvent(event);
-      this.findStatement3(e as editor.IStandaloneCodeEditor);
+      this.findStatement(e as editor.IStandaloneCodeEditor);
     });
 
     // e.onDidChangeCursorSelection((e) => {
@@ -52,22 +49,33 @@ export class SqlQueryStateComponent {
     // });
 
     // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
-    //   this.addWidget(evt.position)
+    //   // this.addWidget(evt.position);
+    //   this.removeWidget();
     // });
+
+    (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorText(() => {
+      console.log('onDidFocusEditorWidget');
+      this.removeWidget();
+    });
   }
 
-  removeWidget(){
-    
+  removeWidget() {
+    if (this.widget) {
+      (this.editor as editor.IStandaloneCodeEditor).removeContentWidget(this.widget);
+      this.widget = null;
+    }
   }
 
   addWidget(pos: Position, value: string) {
+    this.removeWidget();
+
     let { lineNumber, column } = pos;
     const middleColumn: number = (this.editor.getModel() as any).getLineMaxColumn(pos.lineNumber) / 2;
     if (column > middleColumn) {
       column = Math.ceil(middleColumn);
     }
 
-    var contentWidget: editor.IContentWidget = {
+    this.widget = {
       getId: function () {
         return 'my.content.widget';
       },
@@ -90,18 +98,10 @@ export class SqlQueryStateComponent {
       },
       allowEditorOverflow: true,
     };
-    const a = (this.editor as editor.IStandaloneCodeEditor).addContentWidget(contentWidget);
-
-    (this.editor as editor.IStandaloneCodeEditor).onDidFocusEditorWidget(() => {
-      console.log('onDidFocusEditorWidget');
-    });
-
-    (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorWidget(() => {
-      console.log('onDidBlurEditorWidget');
-    });
+    (this.editor as editor.IStandaloneCodeEditor).addContentWidget(this.widget);
   }
 
-  findStatement3(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
+  findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     const startPos = new Position(this.editor.getPosition().lineNumber, e.getModel().getLineMinColumn(this.editor.getPosition().lineNumber));
     const first = e.getModel().findPreviousMatch(';', startPos, false, false, null, false);
 
@@ -115,78 +115,11 @@ export class SqlQueryStateComponent {
         const queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
         const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
         console.log(queryRange, queryValue);
-        this.addWidget(this.editor.getPosition(), queryValue)
+        // this.addWidget(this.editor.getPosition(), queryValue)
         this.editor.setSelection(queryRange);
         // this.addAction(e, queryValue);
-        // this.hightLight(e, queryRange);
       }
     }
-  }
-
-  hightLight(e: any = this.editor as any, range: Range) {
-    const d: editor.IModelDeltaDecoration[] = [{
-      range: range,
-      options: {
-        isWholeLine: true,
-        linesDecorationsClassName: 'myLineDecoration',
-        hoverMessage: { value: 'RUN' }
-      }
-    },
-    {
-      range,
-      options: {
-        inlineClassName: 'myInlineDecoration'
-      }
-    }];
-
-    var dd = (e as editor.ITextModel).deltaDecorations([], d, 122);
-    console.log(dd);
-
-  }
-
-  actionWithCondition(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
-    const myCondition = e.createContextKey('myCondition', true);
-
-    e.addAction({
-      id: 'my-unique-id',
-      label: `WHERE column_name BETWEEN value_1 AND value_2;...`,
-      // keybindings: [
-      //   KeyMod.CtrlCmd | KeyCode.Enter,
-      //   // KeyMod.chord(KeyMod.CtrlCmd | KeyCode.KEY_K, KeyMod.CtrlCmd | KeyCode.KEY_M)
-      // ],
-      precondition: 'myCondition',
-      // keybindingContext: null,
-      contextMenuGroupId: '1_modification',
-      contextMenuOrder: 1,
-      run: function (ed) {
-        //alert("i'm running => " + ed.getPosition());
-        // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
-        // document.dispatchEvent(event);
-
-        // console.log("i'm running => " + ed.getPosition());
-
-        return null;
-      }
-    });
-
-    var myBinding = (e as editor.IStandaloneCodeEditor).addCommand(KeyCode.KEY_L, function () {
-      myCondition.set(false);
-    });
-
-    // Uncomment this for hiding "My Label" option only once.
-    e.onContextMenu(function (evt) {
-      var a = (e as any).getModel().getLineContent(evt.target.position.lineNumber);
-      var c = (e as any).getAction('my-unique-id');
-      console.log(a, c);
-      if (a.includes('table')) {
-        console.log(a);
-        c._precondition.expr[0].value = 1;
-      } else {
-        c._precondition.expr[0].value = 0;
-      }
-      c.isSupported(true);
-      c.run();
-    });
   }
 
   pos() {
