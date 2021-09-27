@@ -40,7 +40,6 @@ export class SqlQueryStateComponent {
     });
 
     (e as editor.IStandaloneCodeEditor).addCommand(KeyMod.CtrlCmd | KeyCode.Enter, (evt) => {
-      console.log(evt);
       // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
       // document.dispatchEvent(event);
       // this.findStatement(e as editor.IStandaloneCodeEditor);
@@ -55,6 +54,14 @@ export class SqlQueryStateComponent {
     e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
       this.findStatement(this.editor as editor.IStandaloneCodeEditor);
       this.hightLight(this.editor, this.queryRange);
+
+      // const pos = this.editor.getPosition();
+      // if(pos.lineNumber > this.queryRange.startLineNumber){
+      //   this.editor.revealLine(this.queryRange.startLineNumber, editor.ScrollType.Smooth)
+      // }
+      // if(pos.lineNumber < this.queryRange.endLineNumber){
+      //   this.editor.revealLine(this.queryRange.endLineNumber, editor.ScrollType.Smooth)
+      // }
     });
 
     // (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorText(() => {
@@ -73,7 +80,7 @@ export class SqlQueryStateComponent {
       if (prev && next) {
         this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
         this.queryValue = (this.editor.getModel() as any).getValueInRange(this.queryRange);
-        console.log(this.queryRange, this.queryValue);
+        // console.log(this.queryRange, this.queryValue);
       }
     }
   }
