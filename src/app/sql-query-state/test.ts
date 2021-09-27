@@ -332,3 +332,6 @@
 //   lineNumber: number;
 //   column: number;
 // } 
+
+
+// // temp1.trigger('Hello', 'editor.action.triggerSuggest', 'Hello');

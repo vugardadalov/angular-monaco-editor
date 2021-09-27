@@ -22,11 +22,12 @@ export class SqlQueryStateComponent {
   action: editor.IActionDescriptor;
   actionContextKey: editor.IContextKey<boolean>;
 
-  defaultEditorOption = {
+  defaultEditorOption: editor.IStandaloneEditorConstructionOptions = {
     language: "sql",//json, sql
     minimap: {
       enabled: false,
-    }
+    },
+    // fixedOverflowWidgets: true
   }
 
   onEditorInit(e: editor.ICodeEditor): void {
@@ -39,11 +40,10 @@ export class SqlQueryStateComponent {
     });
 
     (e as editor.IStandaloneCodeEditor).addCommand(KeyMod.CtrlCmd | KeyCode.Enter, (evt) => {
-      // keydown trigger (CtrlCmd + Enter) on document
+      console.log(evt);
       // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
       // document.dispatchEvent(event);
       this.findStatement3(e as editor.IStandaloneCodeEditor);
-
     });
 
     // e.onDidChangeCursorSelection((e) => {
@@ -51,9 +51,44 @@ export class SqlQueryStateComponent {
     //   console.log(e.selection, a);
     // });
 
-    // e.onDidChangeCursorPosition((e: editor.ICursorPositionChangedEvent) => {
-    //   this.findStatement();
+    // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
+    //   this.addWidget(evt.position)
     // });
+  }
+
+  addWidget(pos: Position, value = 'My content widget') {
+    console.log(pos);
+    
+    var contentWidget: editor.IContentWidget = {
+      getId: function () {
+        return 'my.content.widget';
+      },
+      getDomNode: function () {
+        if (!this.domNode) {
+          this.domNode = document.createElement('div');
+          this.domNode.innerHTML = value;
+          this.domNode.style.background = 'grey';
+          this.domNode.style.width = '250px';
+          (this.domNode as HTMLElement).style.marginTop = '2px';
+        }
+        return this.domNode;
+      },
+      getPosition: function () {
+        return {
+          position: pos,
+          preference: [editor.ContentWidgetPositionPreference.BELOW]
+        };
+      }
+    };
+    (this.editor as editor.IStandaloneCodeEditor).addContentWidget(contentWidget);
+    
+    (this.editor as editor.IStandaloneCodeEditor).onDidFocusEditorWidget(() => {
+      console.log('onDidFocusEditorWidget');
+    });
+
+    (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorWidget(() => {
+      console.log('onDidBlurEditorWidget');
+    });
   }
 
   findStatement3(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
@@ -70,6 +105,7 @@ export class SqlQueryStateComponent {
         const queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
         const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
         console.log(queryRange, queryValue);
+        this.addWidget(this.editor.getPosition(), queryValue)
         this.editor.setSelection(queryRange);
         // this.addAction(e, queryValue);
         // this.hightLight(e, queryRange);
@@ -95,13 +131,13 @@ export class SqlQueryStateComponent {
 
     var dd = (e as editor.ITextModel).deltaDecorations([], d, 122);
     console.log(dd);
-    
+
   }
 
   addAction(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor, label: string = null) {
     if (this.action && this.actionContextKey) {
       console.log('Already created', this.action);
-      
+
       if (!label) {
         this.actionContextKey.set(false);
       } else {
@@ -111,7 +147,7 @@ export class SqlQueryStateComponent {
       return;
     }
     console.log('Create action');
-    
+
     this.actionContextKey = e.createContextKey('actionContextKey', true);
 
     this.action = {
@@ -298,3 +334,5 @@ interface IPosition {
   lineNumber: number;
   column: number;
 } 
+
+// // temp1.trigger('Hello', 'editor.action.triggerSuggest', 'Hello');
