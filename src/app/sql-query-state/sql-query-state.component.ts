@@ -79,19 +79,18 @@ export class SqlQueryStateComponent {
   }
 
   hightLight(e: any = this.editor as any, range: IRange) {
+    let newDec = [];
     if (range) {
-      this.deltaDecoration = (e as editor.ITextModel).deltaDecorations(
-        this.deltaDecoration || [],
-        [{
-          range: range,
-          options: {
-            isWholeLine: true,
-            linesDecorationsClassName: 'my-line-decoration',
-            // hoverMessage: { value: 'RUN' }
-          }
-        }]
-      );
+      newDec.push({
+        range: range,
+        options: {
+          isWholeLine: true,
+          linesDecorationsClassName: 'my-line-decoration',
+          // hoverMessage: { value: 'RUN' }
+        }
+      })
     }
+    this.deltaDecoration = (e as editor.ITextModel).deltaDecorations(this.deltaDecoration || [], newDec);
   }
 
   pos() {
