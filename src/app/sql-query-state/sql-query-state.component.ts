@@ -1,9 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component } from '@angular/core';
 import { editor, KeyCode, KeyMod, Range, Position } from 'monaco-editor';
-import { language, conf } from 'monaco-editor/min/vs/basic-languages/sql/sql';
-import { Key } from 'protractor';
-declare const monaco: any;
+// declare const monaco: any;
 
 @Component({
   selector: 'app-sql-query-state',
@@ -74,8 +71,8 @@ export class SqlQueryStateComponent {
         const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
         console.log(queryRange, queryValue);
         this.editor.setSelection(queryRange);
-        this.addAction(e, queryValue);
-        this.hightLight(e, queryRange);
+        // this.addAction(e, queryValue);
+        // this.hightLight(e, queryRange);
       }
     }
   }
@@ -103,7 +100,7 @@ export class SqlQueryStateComponent {
 
   addAction(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor, label: string = null) {
     if (this.action && this.actionContextKey) {
-      console.log('Already created');
+      console.log('Already created', this.action);
       
       if (!label) {
         this.actionContextKey.set(false);
@@ -125,6 +122,7 @@ export class SqlQueryStateComponent {
       contextMenuGroupId: "1_modification", // create a new grouping
       run: (editor) => {
         console.log(editor);
+        // e.trigger('','my-unique-id')
       }
     };
     e.addAction(this.action);
