@@ -22,6 +22,8 @@ export class SqlQueryStateComponent {
   queryValue: string;
   queryRange: IRange;
 
+  deltaDecoration: string[] = [];
+
   defaultEditorOption: editor.IStandaloneEditorConstructionOptions = {
     language: "sql",//json, sql
     minimap: {
@@ -69,8 +71,6 @@ export class SqlQueryStateComponent {
       const next = e.getModel().findNextMatch(';', startPos, false, false, null, false);
 
       if (prev && next) {
-        // const prevValue = (this.editor.getModel() as any).getValueInRange(prev.range);
-        // const nextValue = (this.editor.getModel() as any).getValueInRange(next.range);
         this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
         this.queryValue = (this.editor.getModel() as any).getValueInRange(this.queryRange);
         console.log(this.queryRange, this.queryValue);
@@ -79,24 +79,19 @@ export class SqlQueryStateComponent {
   }
 
   hightLight(e: any = this.editor as any, range: IRange) {
-    const d: editor.IModelDeltaDecoration[] = [{
-      range: range,
-      options: {
-        isWholeLine: true,
-        linesDecorationsClassName: 'my-line-decoration',
-        // hoverMessage: { value: 'RUN' }
-      }
-    },
-      // {
-      //   range,
-      //   options: {
-      //     inlineClassName: 'myInlineDecoration'
-      //   }
-      // }
-    ];
-
-    var dd = (e as editor.ITextModel).deltaDecorations([], d, 122);
-    console.log(dd);
+    if (range) {
+      this.deltaDecoration = (e as editor.ITextModel).deltaDecorations(
+        this.deltaDecoration || [],
+        [{
+          range: range,
+          options: {
+            isWholeLine: true,
+            linesDecorationsClassName: 'my-line-decoration',
+            // hoverMessage: { value: 'RUN' }
+          }
+        }]
+      );
+    }
   }
 
   pos() {
@@ -202,10 +197,5 @@ HAVING AVG(ISNULL(DATEDIFF(SECOND, call.start_time, call.end_time),0)) > (SELECT
 ORDER BY calls DESC, country.id ASC;
 
 `
-
-interface IPosition {
-  lineNumber: number;
-  column: number;
-}
 
 // // temp1.trigger('Hello', 'editor.action.triggerSuggest', 'Hello');
