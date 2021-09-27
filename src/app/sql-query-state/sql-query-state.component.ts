@@ -86,7 +86,7 @@ export class SqlQueryStateComponent {
   }
 
   hightLight(e: any = this.editor as any, range: IRange) {
-    let newDec = [];
+    let newDec: editor.IModelDeltaDecoration[] = [];
     if (range) {
       newDec.push({
         range: range,
