@@ -16,7 +16,7 @@ export class SqlQueryStateComponent {
   //   }
   // }
 
-  editor?: editor.ICodeEditor | editor.IEditor;
+  editor?: editor.ICodeEditor | editor.IEditor | editor.IStandaloneCodeEditor;
   editorContent = SqlQuery;
 
   action: editor.IActionDescriptor;
@@ -56,9 +56,17 @@ export class SqlQueryStateComponent {
     // });
   }
 
-  addWidget(pos: Position, value = 'My content widget') {
-    console.log(pos);
+  removeWidget(){
     
+  }
+
+  addWidget(pos: Position, value: string) {
+    let { lineNumber, column } = pos;
+    const middleColumn: number = (this.editor.getModel() as any).getLineMaxColumn(pos.lineNumber) / 2;
+    if (column > middleColumn) {
+      column = Math.ceil(middleColumn);
+    }
+
     var contentWidget: editor.IContentWidget = {
       getId: function () {
         return 'my.content.widget';
@@ -69,19 +77,21 @@ export class SqlQueryStateComponent {
           this.domNode.innerHTML = value;
           this.domNode.style.background = 'grey';
           this.domNode.style.width = '250px';
-          (this.domNode as HTMLElement).style.marginTop = '2px';
+          this.domNode.style.marginTop = '2px';
+          this.domNode.style.padding = '8px';
         }
         return this.domNode;
       },
       getPosition: function () {
         return {
-          position: pos,
+          position: { lineNumber, column },
           preference: [editor.ContentWidgetPositionPreference.BELOW]
         };
-      }
+      },
+      allowEditorOverflow: true,
     };
-    (this.editor as editor.IStandaloneCodeEditor).addContentWidget(contentWidget);
-    
+    const a = (this.editor as editor.IStandaloneCodeEditor).addContentWidget(contentWidget);
+
     (this.editor as editor.IStandaloneCodeEditor).onDidFocusEditorWidget(() => {
       console.log('onDidFocusEditorWidget');
     });
@@ -132,53 +142,6 @@ export class SqlQueryStateComponent {
     var dd = (e as editor.ITextModel).deltaDecorations([], d, 122);
     console.log(dd);
 
-  }
-
-  addAction(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor, label: string = null) {
-    if (this.action && this.actionContextKey) {
-      console.log('Already created', this.action);
-
-      if (!label) {
-        this.actionContextKey.set(false);
-      } else {
-        this.actionContextKey.set(true);
-        this.action.label = label;
-      }
-      return;
-    }
-    console.log('Create action');
-
-    this.actionContextKey = e.createContextKey('actionContextKey', true);
-
-    this.action = {
-      id: 'my-unique-id',
-      label,
-      precondition: 'actionContextKey',
-      contextMenuOrder: 0, // choose the order
-      contextMenuGroupId: "1_modification", // create a new grouping
-      run: (editor) => {
-        console.log(editor);
-        // e.trigger('','my-unique-id')
-      }
-    };
-    e.addAction(this.action);
-  }
-
-  customAction(e: any) {
-    const myAction: editor.IActionDescriptor = {
-      id: "something-neat",
-      label: "Something Neat",
-      contextMenuOrder: 1, // choose the order
-      contextMenuGroupId: "1_modification", // create a new grouping
-      keybindings: [
-        // eslint-disable-next-line no-bitwise
-        KeyMod.CtrlCmd | KeyCode.Enter, // Ctrl + Enter or Cmd + Enter
-      ],
-      run: (editor) => {
-        console.log(editor);
-      },
-    };
-    (e as any).addAction(myAction);
   }
 
   actionWithCondition(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
@@ -333,6 +296,6 @@ ORDER BY calls DESC, country.id ASC;
 interface IPosition {
   lineNumber: number;
   column: number;
-} 
+}
 
 // // temp1.trigger('Hello', 'editor.action.triggerSuggest', 'Hello');
