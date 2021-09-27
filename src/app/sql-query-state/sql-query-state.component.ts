@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { editor, KeyCode, KeyMod, Range, Position } from 'monaco-editor';
+import { editor, KeyCode, KeyMod, Range, Position, IRange } from 'monaco-editor';
 // declare const monaco: any;
 
 @Component({
@@ -19,7 +19,8 @@ export class SqlQueryStateComponent {
   editor?: editor.ICodeEditor | editor.IEditor | editor.IStandaloneCodeEditor;
   editorContent = SqlQuery;
 
-  widget: editor.IContentWidget;
+  queryValue: string;
+  queryRange: IRange;
 
   defaultEditorOption: editor.IStandaloneEditorConstructionOptions = {
     language: "sql",//json, sql
@@ -40,7 +41,8 @@ export class SqlQueryStateComponent {
       console.log(evt);
       // const event = new KeyboardEvent('keydown', { bubbles: true, ctrlKey: true, metaKey: true, key: 'Enter', cancelable: true });
       // document.dispatchEvent(event);
-      this.findStatement(e as editor.IStandaloneCodeEditor);
+      // this.findStatement(e as editor.IStandaloneCodeEditor);
+      this.editor.setSelection(this.queryRange);
     });
 
     // e.onDidChangeCursorSelection((e) => {
@@ -48,57 +50,14 @@ export class SqlQueryStateComponent {
     //   console.log(e.selection, a);
     // });
 
-    // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
-    //   // this.addWidget(evt.position);
-    //   this.removeWidget();
-    // });
-
-    (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorText(() => {
-      console.log('onDidFocusEditorWidget');
-      this.removeWidget();
+    e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
+      this.findStatement(this.editor as editor.IStandaloneCodeEditor);
+      this.hightLight(this.editor, this.queryRange);
     });
-  }
 
-  removeWidget() {
-    if (this.widget) {
-      (this.editor as editor.IStandaloneCodeEditor).removeContentWidget(this.widget);
-      this.widget = null;
-    }
-  }
-
-  addWidget(pos: Position, value: string) {
-    this.removeWidget();
-
-    let { lineNumber, column } = pos;
-    const middleColumn: number = (this.editor.getModel() as any).getLineMaxColumn(pos.lineNumber) / 2;
-    if (column > middleColumn) {
-      column = Math.ceil(middleColumn);
-    }
-
-    this.widget = {
-      getId: function () {
-        return 'my.content.widget';
-      },
-      getDomNode: function () {
-        if (!this.domNode) {
-          this.domNode = document.createElement('div');
-          this.domNode.innerHTML = value;
-          this.domNode.style.background = 'grey';
-          this.domNode.style.width = '250px';
-          this.domNode.style.marginTop = '2px';
-          this.domNode.style.padding = '8px';
-        }
-        return this.domNode;
-      },
-      getPosition: function () {
-        return {
-          position: { lineNumber, column },
-          preference: [editor.ContentWidgetPositionPreference.BELOW]
-        };
-      },
-      allowEditorOverflow: true,
-    };
-    (this.editor as editor.IStandaloneCodeEditor).addContentWidget(this.widget);
+    // (this.editor as editor.IStandaloneCodeEditor).onDidBlurEditorText(() => {
+    //   console.log('onDidFocusEditorWidget');
+    // });
   }
 
   findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
@@ -112,14 +71,32 @@ export class SqlQueryStateComponent {
       if (prev && next) {
         // const prevValue = (this.editor.getModel() as any).getValueInRange(prev.range);
         // const nextValue = (this.editor.getModel() as any).getValueInRange(next.range);
-        const queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
-        const queryValue = (this.editor.getModel() as any).getValueInRange(queryRange);
-        console.log(queryRange, queryValue);
-        // this.addWidget(this.editor.getPosition(), queryValue)
-        this.editor.setSelection(queryRange);
-        // this.addAction(e, queryValue);
+        this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
+        this.queryValue = (this.editor.getModel() as any).getValueInRange(this.queryRange);
+        console.log(this.queryRange, this.queryValue);
       }
     }
+  }
+
+  hightLight(e: any = this.editor as any, range: IRange) {
+    const d: editor.IModelDeltaDecoration[] = [{
+      range: range,
+      options: {
+        isWholeLine: true,
+        linesDecorationsClassName: 'my-line-decoration',
+        // hoverMessage: { value: 'RUN' }
+      }
+    },
+      // {
+      //   range,
+      //   options: {
+      //     inlineClassName: 'myInlineDecoration'
+      //   }
+      // }
+    ];
+
+    var dd = (e as editor.ITextModel).deltaDecorations([], d, 122);
+    console.log(dd);
   }
 
   pos() {
