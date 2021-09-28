@@ -11,12 +11,17 @@ export class SqlQueryStateComponent {
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      if(!this.editor.hasTextFocus()){
-        this.editor.focus();
-        this.findStatement(this.editor as editor.IStandaloneCodeEditor);
-        this.hightLight(this.editor, this.queryRange);
-      } else {
+      if (this.editor.hasTextFocus()) {
         this.editor.setSelection(this.queryRange);
+      } else {
+        this.editor.focus();
+
+        if (this.queryRange && this.queryValue) {
+          this.editor.setSelection(this.queryRange);
+        } else {
+          this.findStatement(this.editor as editor.IStandaloneCodeEditor);
+          this.hightLight(this.editor, this.queryRange);
+        }
       }
     }
   }
