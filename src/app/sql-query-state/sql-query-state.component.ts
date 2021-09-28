@@ -15,8 +15,9 @@ export class SqlQueryStateComponent {
         this.editor.focus();
         this.findStatement(this.editor as editor.IStandaloneCodeEditor);
         this.hightLight(this.editor, this.queryRange);
+      } else {
+        this.editor.setSelection(this.queryRange);
       }
-      this.editor.setSelection(this.queryRange);
     }
   }
 
@@ -91,7 +92,8 @@ export class SqlQueryStateComponent {
         options: {
           isWholeLine: true,
           linesDecorationsClassName: 'my-line-decoration',
-          hoverMessage: { value: 'Run' }
+          hoverMessage: { value: 'Run' },
+          // beforeContentClassName: "extra-cursor"
         }
       })
     }
