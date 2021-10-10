@@ -89,16 +89,22 @@ export class SqlQueryStateComponent {
     if (!currentContent) return;
 
     for (let i = currentLine - 1; i >= start.lineNumber; i--) {
-      if (!e.getModel().getLineContent(i).trim()) {
+      const content = e.getModel().getLineContent(i).trim();
+      if (!content || content.includes(';')) {
         start.lineNumber = i + 1;
         break;
       }
     }
 
-    for (let i = currentLine + 1; i <= end.lineNumber; i++) {
-      if (!e.getModel().getLineContent(i).trim()) {
-        end.lineNumber = i - 1;
+    for (let i = currentLine; i <= end.lineNumber; i++) {
+      const content = e.getModel().getLineContent(i).trim();
+      if (!content) {
+        end.lineNumber =  i - 1;
         end.column = e.getModel().getLineMaxColumn(i - 1);
+        break;
+      } else if (content.includes(';')) {
+        end.lineNumber =  i;
+        end.column = e.getModel().getLineMaxColumn(i);
         break;
       }
     }
