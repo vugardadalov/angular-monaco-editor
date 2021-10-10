@@ -12,12 +12,14 @@ export class SqlQueryStateComponent {
   onKeyDown(event: KeyboardEvent): void {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
       if (this.editor.hasTextFocus()) {
-        this.editor.setSelection(this.queryRange);
+        // this.editor.setSelection(this.queryRange);
+        console.log((this.editor.getModel() as any).getValueInRange(this.queryRange));
       } else {
         this.editor.focus();
 
-        if (this.queryRange && this.queryValue) {
-          this.editor.setSelection(this.queryRange);
+        if (this.queryRange) {
+          // this.editor.setSelection(this.queryRange);
+          console.log((this.editor.getModel() as any).getValueInRange(this.queryRange));
         } else {
           this.findStatement(this.editor as editor.IStandaloneCodeEditor);
           this.hightLight(this.editor, this.queryRange);
@@ -29,8 +31,8 @@ export class SqlQueryStateComponent {
   editor?: editor.ICodeEditor | editor.IEditor | editor.IStandaloneCodeEditor;
   editorContent = SqlQuery;
 
-  queryValue: string;
   queryRange: IRange;
+  selectionRange: IRange;
 
   deltaDecoration: string[] = [];
 
@@ -55,28 +57,21 @@ export class SqlQueryStateComponent {
       document.dispatchEvent(event);
     });
 
-    // e.onDidChangeCursorSelection((e) => {
-    //   const a = (this.editor.getModel() as any).getValueInRange(e.selection);
-    //   console.log(e.selection, a);
-    // });
-
-    e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
-      this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
-      this.hightLight(this.editor, this.queryRange);
-
-      // const pos = this.editor.getPosition();
-      // if(pos.lineNumber > this.queryRange.startLineNumber){
-      //   this.editor.revealLine(this.queryRange.startLineNumber, editor.ScrollType.Smooth)
-      // }
-      // if(pos.lineNumber < this.queryRange.endLineNumber){
-      //   this.editor.revealLine(this.queryRange.endLineNumber, editor.ScrollType.Smooth)
-      // }
+    e.onDidChangeCursorSelection((e) => {
+      const a = (this.editor.getModel() as any).getValueInRange(e.selection);
+      if (a) {
+        this.queryRange = e.selection;
+        this.hightLight(this.editor, e.selection);
+      } else {
+        this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
+      }
     });
   }
 
   findStatement2(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     this.queryRange = null;
-    this.queryValue = null;
+
+    console.log(this.selectionRange);
 
     const lineCount = e.getModel().getLineCount();
 
@@ -86,7 +81,10 @@ export class SqlQueryStateComponent {
     const currentLine = e.getPosition().lineNumber;
     const currentContent = e.getModel().getLineContent(currentLine).trim();
 
-    if (!currentContent) return;
+    if (!currentContent) {
+      this.hightLight(e, null);
+      return;
+    };
 
     for (let i = currentLine - 1; i >= start.lineNumber; i--) {
       const content = e.getModel().getLineContent(i).trim();
@@ -99,21 +97,19 @@ export class SqlQueryStateComponent {
     for (let i = currentLine; i <= end.lineNumber; i++) {
       const content = e.getModel().getLineContent(i).trim();
       if (!content) {
-        end.lineNumber =  i - 1;
+        end.lineNumber = i - 1;
         end.column = e.getModel().getLineMaxColumn(i - 1);
         break;
       } else if (content.includes(';')) {
-        end.lineNumber =  i;
+        end.lineNumber = i;
         end.column = e.getModel().getLineMaxColumn(i);
         break;
       }
     }
 
     this.queryRange = new Range(start.lineNumber, start.column, end.lineNumber, end.column);
-    this.queryValue = (this.editor.getModel() as any).getValueInRange(this.queryRange);
-
-    console.log(start, end, currentLine);
-    console.log(this.queryRange, this.queryValue);
+    console.log(start, end, currentLine, this.queryRange);
+    this.hightLight(e, this.queryRange);
   }
 
   findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
@@ -132,8 +128,6 @@ export class SqlQueryStateComponent {
 
       if (prev && next) {
         this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
-        this.queryValue = (this.editor.getModel() as any).getValueInRange(this.queryRange);
-        // console.log(this.queryRange, this.queryValue);
       }
     }
   }
@@ -170,3 +164,15 @@ export class SqlQueryStateComponent {
     console.log(this.editor);
   }
 }
+
+
+    // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
+    // this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
+    // const pos = this.editor.getPosition();
+    // if(pos.lineNumber > this.queryRange.startLineNumber){
+    //   this.editor.revealLine(this.queryRange.startLineNumber, editor.ScrollType.Smooth)
+    // }
+    // if(pos.lineNumber < this.queryRange.endLineNumber){
+    //   this.editor.revealLine(this.queryRange.endLineNumber, editor.ScrollType.Smooth)
+    // }
+    // });
