@@ -63,20 +63,49 @@ export class SqlQueryStateComponent {
   findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     this.queryRange = null;
 
-    const lineCount = e.getModel().getLineCount();
-
     let start = { lineNumber: 1, column: 1 };
-    let end = { lineNumber: lineCount, column: e.getModel().getLineMaxColumn(lineCount) };
+    let end = { lineNumber: e.getModel().getLineCount(), column: e.getModel().getLineMaxColumn(e.getModel().getLineCount()) };
 
-    const currentLine = e.getPosition().lineNumber;
-    const currentContent = e.getModel().getLineContent(currentLine).trim();
+    let line = e.getPosition().lineNumber;
 
-    if (!currentContent) {
-      this.hightLight(e, null);
-      return;
+    if (!e.getModel().getLineContent(line).trim()) {
+      let i = 1, goPrev = true, goNext = true, foundLine = null;
+
+      while (goPrev || goNext) {
+
+        if ((line + i) <= end.lineNumber) {
+          if (e.getModel().getLineContent(line + i).trim()) {
+            foundLine = line + i;
+            break;
+          }
+        } else {
+          goNext = false;
+        }
+
+        if ((line - i) >= start.lineNumber) {
+          if (e.getModel().getLineContent(line - i).trim()) {
+            foundLine = line - i;
+            break;
+          }
+        } else {
+          goPrev = false;
+        }
+
+        i++;
+        console.log(goPrev, goNext, foundLine);
+      }
+
+      console.log(foundLine);
+
+      if (foundLine) {
+        line = foundLine;
+      } else {
+        this.hightLight(e, null);
+        return;
+      }
     };
 
-    for (let i = currentLine - 1; i >= start.lineNumber; i--) {
+    for (let i = line - 1; i >= start.lineNumber; i--) {
       const content = e.getModel().getLineContent(i).trim();
       if (!content || content.includes(';')) {
         start.lineNumber = i + 1;
@@ -84,7 +113,7 @@ export class SqlQueryStateComponent {
       }
     }
 
-    for (let i = currentLine; i <= end.lineNumber; i++) {
+    for (let i = line; i <= end.lineNumber; i++) {
       const content = e.getModel().getLineContent(i).trim();
       if (!content) {
         end.lineNumber = i - 1;
@@ -98,7 +127,7 @@ export class SqlQueryStateComponent {
     }
 
     this.queryRange = new Range(start.lineNumber, start.column, end.lineNumber, end.column);
-    console.log(start, end, currentLine, this.queryRange);
+    console.log(start, end, line, this.queryRange);
     this.hightLight(e, this.queryRange);
   }
 

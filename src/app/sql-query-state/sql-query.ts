@@ -5,13 +5,23 @@ export const SqlRegex = 'SELECT|CREATE|DELETE|ALTER|DROP|TRUNCATE|INSERT|UPDATE|
 
 // // temp1.trigger('Hello', 'editor.action.triggerSuggest', 'Hello');
 
-export const SqlQuery1 = `
+export const SqlQuery = `
 SELECT * FROM test
 
 SELECT * FROM hello123;
+Select * from Employee a where rowid <>( select max(rowid) 
+from Employee b where a.Employee_num=b.Employee_num);
+
+
+
+
+
+
+
+
 `
 
-export const SqlQuery = `
+export const SqlQuery1 = `
 SELECT 
     call.*,
     DATEDIFF("SECOND", call.start_time, call.end_time) AS call_duration
