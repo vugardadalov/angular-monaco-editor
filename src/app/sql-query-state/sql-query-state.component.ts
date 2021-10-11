@@ -63,8 +63,6 @@ export class SqlQueryStateComponent {
   findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     this.queryRange = null;
 
-    console.log(this.selectionRange);
-
     const lineCount = e.getModel().getLineCount();
 
     let start = { lineNumber: 1, column: 1 };

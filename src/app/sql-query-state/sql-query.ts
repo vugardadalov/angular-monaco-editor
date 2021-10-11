@@ -20,15 +20,23 @@ ORDER BY
     call.employee_id ASC,
     call.start_time ASC;
 
+
+
 Select * from Employee a where rowid <>( select max(rowid) 
 from Employee b where a.Employee_num=b.Employee_num);
 
+
+
 Select * from Employee where Rowid= select min(Rowid) 
-from Employee;
+from Employee
+
+
+
 
 Select * from Employee e where rownum <=5
 union
 select * from (Select * from Employee e order by rowid desc) where rownum <=5;
+
 
 select distinct salary from employee a where 3 >= (select count(distinct salary) 
 from employee b where a.salary <= b.salary) 
