@@ -11,19 +11,11 @@ export class SqlQueryStateComponent {
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-      if (this.editor.hasTextFocus()) {
-        // this.editor.setSelection(this.queryRange);
+      this.editor.focus();
+      if (this.queryRange) {
         console.log((this.editor.getModel() as any).getValueInRange(this.queryRange));
       } else {
-        this.editor.focus();
-
-        if (this.queryRange) {
-          // this.editor.setSelection(this.queryRange);
-          console.log((this.editor.getModel() as any).getValueInRange(this.queryRange));
-        } else {
-          this.findStatement(this.editor as editor.IStandaloneCodeEditor);
-          this.hightLight(this.editor, this.queryRange);
-        }
+        console.log('Warning - Valid query not found!!!');
       }
     }
   }
@@ -63,12 +55,12 @@ export class SqlQueryStateComponent {
         this.queryRange = e.selection;
         this.hightLight(this.editor, e.selection);
       } else {
-        this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
+        this.findStatement(this.editor as editor.IStandaloneCodeEditor);
       }
     });
   }
 
-  findStatement2(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
+  findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
     this.queryRange = null;
 
     console.log(this.selectionRange);
@@ -112,26 +104,6 @@ export class SqlQueryStateComponent {
     this.hightLight(e, this.queryRange);
   }
 
-  findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
-    console.log(e.getModel());
-
-    const startPos = new Position(this.editor.getPosition().lineNumber, e.getModel().getLineMinColumn(this.editor.getPosition().lineNumber));
-    const first = e.getModel().findPreviousMatch(';', startPos, false, false, null, false);
-
-    console.log(startPos, first);
-
-    if (first) {
-      const prev = e.getModel().findNextMatch(SqlRegex, new Position(first.range.endLineNumber, first.range.endColumn), true, false, null, false);
-      const next = e.getModel().findNextMatch(';', startPos, false, false, null, false);
-
-      console.log(prev, next);
-
-      if (prev && next) {
-        this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
-      }
-    }
-  }
-
   hightLight(e: any = this.editor as any, range: IRange) {
     let newDec: editor.IModelDeltaDecoration[] = [];
     if (range) {
@@ -166,13 +138,33 @@ export class SqlQueryStateComponent {
 }
 
 
-    // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
-    // this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
-    // const pos = this.editor.getPosition();
-    // if(pos.lineNumber > this.queryRange.startLineNumber){
-    //   this.editor.revealLine(this.queryRange.startLineNumber, editor.ScrollType.Smooth)
-    // }
-    // if(pos.lineNumber < this.queryRange.endLineNumber){
-    //   this.editor.revealLine(this.queryRange.endLineNumber, editor.ScrollType.Smooth)
-    // }
-    // });
+  // e.onDidChangeCursorPosition((evt: editor.ICursorPositionChangedEvent) => {
+  // this.findStatement2(this.editor as editor.IStandaloneCodeEditor);
+  // const pos = this.editor.getPosition();
+  // if(pos.lineNumber > this.queryRange.startLineNumber){
+  //   this.editor.revealLine(this.queryRange.startLineNumber, editor.ScrollType.Smooth)
+  // }
+  // if(pos.lineNumber < this.queryRange.endLineNumber){
+  //   this.editor.revealLine(this.queryRange.endLineNumber, editor.ScrollType.Smooth)
+  // }
+  // });
+
+  // findStatement(e: editor.IStandaloneCodeEditor = this.editor as editor.IStandaloneCodeEditor) {
+  //   console.log(e.getModel());
+
+  //   const startPos = new Position(this.editor.getPosition().lineNumber, e.getModel().getLineMinColumn(this.editor.getPosition().lineNumber));
+  //   const first = e.getModel().findPreviousMatch(';', startPos, false, false, null, false);
+
+  //   console.log(startPos, first);
+
+  //   if (first) {
+  //     const prev = e.getModel().findNextMatch(SqlRegex, new Position(first.range.endLineNumber, first.range.endColumn), true, false, null, false);
+  //     const next = e.getModel().findNextMatch(';', startPos, false, false, null, false);
+
+  //     console.log(prev, next);
+
+  //     if (prev && next) {
+  //       this.queryRange = new Range(prev.range.startLineNumber, prev.range.startColumn, next.range.endLineNumber, next.range.endColumn);
+  //     }
+  //   }
+  // }
